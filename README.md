@@ -216,6 +216,9 @@ Available assignment templates are:
 - [HW06: Network duality and integer production](assignments/hw06/README.md),
   with all network data and the figure included in the notebook. Enter `hw06`
   in the assignment-copy task.
+- [HW07: Integer programming models and logic](assignments/hw07/README.md),
+  with all numerical data included in the notebook. Enter `hw07` in the
+  assignment-copy task.
 
 See [Assignments and PDF Submission](docs/canvas-assignment-workflow.md) for the
 complete recurring workflow. See
