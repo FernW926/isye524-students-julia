@@ -153,6 +153,13 @@ binary variables, first with a literal model and then an indexed formulation.
 production to binary machine-rental decisions and maximizes net profit.
 [notebooks/19-UFL.ipynb](notebooks/19-UFL.ipynb) solves uncapacitated facility
 location with Gurobi and includes an optional HiGHS/Gurobi timing comparison.
+[notebooks/20-Sudoku.ipynb](notebooks/20-Sudoku.ipynb) completes a Sudoku grid
+using binary variables and row, column, and block constraints.
+[notebooks/21-CuttingPipe.ipynb](notebooks/21-CuttingPipe.ipynb) minimizes
+stock pipes using individual-pipe and enumerated-pattern formulations.
+[notebooks/22-TSP.ipynb](notebooks/22-TSP.ipynb) compares an assignment
+relaxation, adaptive subtour elimination, and the Miller–Tucker–Zemlin
+formulation for a ten-city traveling salesman problem.
 All class examples use packages included in the course environment. UFL also
 requires a Gurobi license; its opening section explains academic license setup.
 
