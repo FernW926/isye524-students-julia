@@ -130,6 +130,95 @@ module PicnicExample end
     end
 end
 
+module KnapsackExample end
+module ClothCoExample end
+module UFLExample end
+
+@testset "Integer programming class examples" begin
+    @testset "Knapsack formulations" begin
+        objectives = Float64[]
+        selections = Vector{Float64}[]
+        example = execute_code_cells(KnapsackExample,
+            joinpath(REPOSITORY_ROOT, "notebooks", "17-Knapsack.ipynb");
+            after_cell = (example, source) -> begin
+                if occursin("optimize!(m)", source)
+                    @test is_solved_and_feasible(example.m; allow_local = false)
+                    push!(objectives, objective_value(example.m))
+                    push!(selections, value.(example.z))
+                end
+            end,
+        )
+        # Enumerate every subset independently of the JuMP formulations.
+        best = maximum(
+            dot(example.v, collect(items))
+            for items in Iterators.product(ntuple(_ -> 0:1, example.n)...)
+            if dot(example.w, collect(items)) <= example.W
+        )
+        @test objectives ≈ fill(best, 2) atol = 1e-8
+        for selected in selections
+            @test all(x -> isapprox(x, 0; atol = 1e-8) ||
+                           isapprox(x, 1; atol = 1e-8), selected)
+            @test dot(example.w, selected) <= example.W + 1e-8
+        end
+    end
+
+    @testset "ClothCo fixed machine rentals" begin
+        example = execute_code_cells(ClothCoExample,
+            joinpath(REPOSITORY_ROOT, "notebooks", "18-ClothCo.ipynb"))
+        @test is_solved_and_feasible(example.m; allow_local = false)
+        @test value.(example.x) ≈ [0, 0, 25] atol = 1e-8
+        @test value.(example.z) ≈ [0, 0, 1] atol = 1e-8
+        @test objective_value(example.m) ≈ 75.0 atol = 1e-8
+        @test dot([3, 2, 6], value.(example.x)) <= 150 + 1e-8
+        @test dot([4, 3, 4], value.(example.x)) <= 160 + 1e-8
+        @test all(value.(example.x) .<= 54 .* value.(example.z) .+ 1e-8)
+    end
+
+    @testset "UFL model and optional solver comparison" begin
+        # CI has no commercial license. Use HiGHS for the same model there;
+        # opt into actual Gurobi execution on a licensed maintainer machine.
+        replacements = [
+            "nI = 100" => "nI = 6",
+            "nJ = 100" => "nJ = 5",
+            "run_benchmarks = false" => "run_benchmarks = true",
+            "nvals = [5,10,15,20,25,30,35,40,45,50]" => "nvals = [3, 5]",
+            "ntrials = 10" => "ntrials = 2",
+        ]
+        if get(ENV, "ISYE524_TEST_GUROBI", "false") != "true"
+            append!(replacements, [
+                "using JuMP, Gurobi, HiGHS" => "using JuMP, HiGHS",
+                "gurobi_env = Gurobi.Env(; output_flag = 0)" => "gurobi_env = nothing",
+                "gurobi_optimizer = () -> Gurobi.Optimizer(gurobi_env)" => "gurobi_optimizer = HiGHS.Optimizer",
+            ])
+        end
+        example = execute_code_cells(UFLExample,
+            joinpath(REPOSITORY_ROOT, "notebooks", "19-UFL.ipynb");
+            source_replacements = replacements)
+        @test is_solved_and_feasible(example.license_check; allow_local = false)
+        @test objective_value(example.license_check) ≈ 1.0 atol = 1e-8
+        @test is_solved_and_feasible(example.m; allow_local = false)
+        z, y = value.(example.z), value.(example.y)
+        @test all(isapprox.(sum(y; dims = 1), 1; atol = 1e-8))
+        @test all(y .<= z .+ 1e-8)
+        @test all(x -> isapprox(x, round(x); atol = 1e-8), z)
+        @test all(x -> isapprox(x, round(x); atol = 1e-8), y)
+        # Enumerate open-facility subsets and assign each customer to the cheapest.
+        best = minimum(
+            sum(example.f[i] for i in 1:example.nI if (mask >> (i - 1)) & 1 == 1) +
+            sum(minimum(example.c[i, j] for i in 1:example.nI
+                        if (mask >> (i - 1)) & 1 == 1) for j in 1:example.nJ)
+            for mask in 1:(2^example.nI - 1)
+        )
+        @test objective_value(example.m) ≈ best atol = 1e-8
+        @test size(example.tt_highs) == size(example.tt_gurobi) == (2, 2)
+        @test all(>(0), example.tt_highs)
+        @test all(>(0), example.tt_gurobi)
+        @test example.tt_highs_mean ≈ vec(sum(example.tt_highs; dims = 2)) ./ 2
+        @test example.tt_gurobi_mean ≈ vec(sum(example.tt_gurobi; dims = 2)) ./ 2
+        @test length(example.comparison_plot.series_list) == 2
+    end
+end
+
 module TopBrassExample end
 
 @testset "Top Brass class example" begin

@@ -147,7 +147,14 @@ path for the house project using minimum-cost flow with negative task durations
 as arc costs.
 [notebooks/16-Picnic.ipynb](notebooks/16-Picnic.ipynb) maximizes the number of
 family members transported in four cars using a minimum-cost circulation.
-All class examples use packages already included in the course environment.
+[notebooks/17-Knapsack.ipynb](notebooks/17-Knapsack.ipynb) chooses items with
+binary variables, first with a literal model and then an indexed formulation.
+[notebooks/18-ClothCo.ipynb](notebooks/18-ClothCo.ipynb) links continuous clothing
+production to binary machine-rental decisions and maximizes net profit.
+[notebooks/19-UFL.ipynb](notebooks/19-UFL.ipynb) solves uncapacitated facility
+location with Gurobi and includes an optional HiGHS/Gurobi timing comparison.
+All class examples use packages included in the course environment. UFL also
+requires a Gurobi license; its opening section explains academic license setup.
 
 Files under `notebooks/` are read-only course examples. Students should run and
 study them but should not save personal work in those tracked files.
@@ -157,6 +164,7 @@ study them but should not save personal work in those tracked files.
 The course environment includes:
 
 - JuMP with the open-source HiGHS and Ipopt solvers
+- Gurobi's Julia interface for the UFL example (a separate solver license is required)
 - CSV, DataFrames, NamedArrays, and XLSX for course data
 - Plots for visualization
 - Distributions and MathOptInterface for selected course material
@@ -165,8 +173,9 @@ The course environment includes:
 JSON is also included for the repository's notebook-cleaning tools; students do
 not need to use it in course notebooks.
 
-Commercial solvers such as Gurobi and Mosek are intentionally not required by
-the standard student environment.
+Gurobi is used only by the UFL example; the other examples and environment check
+use the open-source solvers. Follow the license instructions at the top of
+[UFL](notebooks/19-UFL.ipynb) before running it. Mosek is not included.
 
 ## Starting an assignment
 
